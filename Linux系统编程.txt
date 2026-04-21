@@ -1,0 +1,80 @@
+信号
+	void ( *signal(int sig, void (*handler)(int)) )(int);
+		Returns previous signal disposition on success, or SIG_ERR on error
+		
+		sig:标识希望修改处置的信号编号。
+		handler:标识信号抵达时所调用函数的地址。
+		
+		在为signal()指定 handler 参数时，可以以如下值来代替函数地址：
+			SIG_DFL：将信号处置重置为默认值。这适用于将之前 signal()调用所改变的信号处置还原。
+			SIG_IGN：忽略该信号。如果信号专为此进程而生，那么内核会默默将其丢弃。进程甚至从未知道曾经产生了该信号。
+	PS:还能这么表示
+		typedef void (*sighandler_t)(int);
+		sighandler_t signal(int sig, sighandler_t handler);
+	
+	int kill(pid_t pid, int sig);
+		Returns 0 on success, or -1 on error
+		
+		pid:标识一个或多个目标进程。
+		sig:待发送的信号。
+	
+	int raise(int sig);
+		Returns 0 on success, or nonzero on error
+		
+		sig:待发送的信号。
+	
+	int sigemptyset(sigset_t *set);
+	int sigfillset(sigset_t *set);
+	int sigaddset(sigset_t *set, int sig);
+	int sigdelset(sigset_t *set, int sig);
+	int sigandset(sigset_t *set, sigset_t *left, sigset_t *right);
+	int sigorset(sigset_t *set, sigset_t *left, sigset_t *right);
+		Both return 0 on success, or -1 on error
+	int sigismenber(const sigset_t *set, int sig);
+		Returns 1 if sig is a member of set, otherwise 0
+	int sigisemptyset(const sigset_t *set);
+		Returns 1 if sig is empty, otherwise 0
+	
+	int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+		Returns 0 on success, or -1 on error
+		
+		how:指定了sigprocmask函数想给信号掩码带来的变化。
+			SIG_BLOCK：将 set 指向信号集内的指定信号添加到信号掩码中。换言之，将信号掩码设置为其当前值和 set 的并集。
+			SIG_UNBLOCK：将 set 指向信号集中的信号从信号掩码中移除。即使要解除阻塞的信号当前并未处于阻塞状态，也不会返回错误。
+			SIG_SETMASK：将 set 指向的信号集赋给信号掩码。
+		
+		若oldset 参数不为空，则其指向一个 sigset_t 结构缓冲区，用于返回之前的信号掩码。
+		如果想获取信号掩码而又对其不作改动，那么可将 set 参数指定为空，这时将忽略 how 参数。
+	
+	int sigpending(sigset_t *set);
+		Returns 0 on success, or -1 on error
+		
+		sigpending()系统调用为调用进程返回处于等待状态的信号集，并将其置于 set 指向的sigset_t结构中。
+	
+	int sigaction(int sig, const struct *act, struct sigaction *oldact);
+		Returns 0 on success, or -1 on error
+		
+		sig:标识想要获取或改变的信号编号。
+		act:指向描述信号新处置的数据结构。如果仅对信号的现有处置感兴趣，那么可将该参数指定为 NULL。
+		oldact:返回之前信号处置的相关信息。如果无意获取此类信息，那么可将该参数指定为 NULL。
+		
+		struct sigaction 
+		{
+			void (*sa_handler)(int);  	/* Address of handler */
+			sigset_t sa_mask;    		/* Signals blocked during handler invocation */
+			int sa_flags;    			/* Flags controlling handler invocation */
+			void (*sa_restorer)(void); 	/* Not for application use */
+		};
+		sa_handler:信号处理器函数的地址，亦或是常量 SIG_IGN、SIG_DFL 之一。仅当 sa_handler 是信号处理程序的地址时，才会对 sa_mask 和 sa_flags 字段加以处理。
+		sa_mask:定义了一组信号，在调用由 sa_handler 所定义的处理器程序时将阻塞该组信号，直至信号处理器函数返回，届时将自动删除这些信号。此外，引发对处理器程序调用的信号将自动添加到进程信号掩码中。
+		sa_flags:指定用于控制信号处理过程的各种选项。
+		sa_restorer:不适用于应用程序。
+
+进程
+	pid_t fork(void);
+		In parent:returns process ID of child on success, or -1 on error;in successfully created child:always returns 0
+	
+	void _exit(int status);
+	
+	void exit(int status);
+		调用退出处理程序,刷新 stdio 流缓冲区,使用由 status 提供的值执行_exit()系统调用。
