@@ -1,0 +1,1047 @@
+new & delete
+	int *a = new int(10);
+	delete a;
+	
+	int *arr = new int[10];
+	delete[] arr;
+
+引用
+	int a = 10;
+	int &b = a;
+	
+	引用必须初始化，引用在初始化后不可以改变
+	
+	void mySwap(int &a, int &b)
+	{
+		int temp = a;
+		a = b;
+		b = temp;
+	}
+	int main()
+	{
+		int a = 10;
+		int b = 20;
+		
+		mySwap(a, b);
+		cout << "a:" << a << " b:" << b << endl;
+		
+		return 0;
+	}
+	
+	int &test(void)
+	{
+		static int a = 20;
+		return a;
+	}
+	int main()
+	{
+		int &ref = test();
+		cout << "ref2 = " << ref2 << endl;
+		
+		test() = 30;
+		cout << "ref2 = " << ref2 << endl;
+		
+		return 0;
+	}
+	!!!不要返回局部变量的引用!!!
+	
+	引用在 C++ 内部实现是一个指针常量。C++ 推荐使用引用技术，因为语法方便。引用的本质是指针常量，所以的指针操作编译器都帮我们做了。
+	void func(int &ref)	// int *const ref = &a;
+	{
+		ref = 10;		// *ref = 100;
+	}
+	int main(void)
+	{
+		int a = 10;
+		
+		int &ref = a;	// int *const ref = &a;
+		ref = 20; 		// *ref = 20;
+		
+		func(a);		// 见函数定义
+		
+		return 0；
+	}
+	
+	常量引用主要用来修饰形参，防止误操作
+	void func(const int &a)
+	{
+		cout << v << endl;
+	}
+	int main(void)
+	{
+		int a = 10;
+		func(a);
+		
+		return 0:
+	}
+	PS:指针常量和常量指针
+		指针常量（const pointer）:指针本身不能变。
+			int a = 10, b = 20;
+			int* const p = a;
+			
+			*p = 100;	// 可以
+			p = &b;		// 不可以
+		常量指针（pointer to const）：指针指向的内容不能变。
+			int a = 10, b = 20;
+			const int* p = &a;
+			
+			*p = 100;   // 不可以
+			p = &b;     // 可以
+
+函数提高
+	函数默认参数
+		int func(int a, int b = 10, int c = 10)；
+		
+		如果某个位置参数有默认值，那么从这个位置往后，从左向右，必须都要有默认值。
+		如果函数声明有默认值，函数实现的时候就不能有默认参数。
+
+	函数占位参数
+		函数的形参列表里可以有占位参数，用来做占位，调用函数时必须填补该位置。
+		void func(int a, int b)
+		{
+			cout << "this is func" << endl;
+		}
+		int main(void)
+		{
+			func(10, 10);
+			
+			return 0;
+		}
+	
+	函数重载
+		在同一作用域下，函数名称相同，函数参数类型、个数或者顺序不同。函数的返回值不可以作为函数重载的条件。
+		void func(void);
+		void func(int a);
+		void func(double a);
+		void func(int a ,double b);
+		void func(double a ,int b);
+
+封装
+	class 类名
+	{
+	访问权限:
+		属性/行为
+	访问权限:
+		属性/行为
+	···
+	}
+
+	public：		类内可以访问 类外可以访问
+	protected：	类内可以访问 类外不可以访问
+	private：	类内可以访问 类外不可以访问
+	
+	将所有成员属性设置为私有，可以自己控制读写权限。对于写权限，可以检测数据的有效性。
+
+对象的初始化和清理
+	构造函数：主要作用在于创建对象时为对象的成员属性赋值，构造函数由编译器自动调用，无须手动调用。
+	析构函数：主要作用在于对象销毁前系统自动调用，执行一些清理工作。
+	对象的初始化和清理工作是编译器强制要求的，如果不提供构造和析构函数，编译器会提供。编译器提供的构造函数和析构函数是空实现。
+	
+	类名()	// 构造函数可以有参数，因此可以发送重载
+	{
+		
+	}
+	~类名()	// 析构函数不可以有参数，因此不可以发生重载
+	{
+		
+	}
+	
+	按照参数分类，分为有参构造函数和无参构造函数。无参构造又称为默认构造函数。有参构造函数的三种调用方式：括号法、显示法、隐式转换法。
+	按照类型分类，分为普通构造函数和拷贝构造函数
+	class person
+	{
+	public：
+		person()
+		{
+			cout << "无参构造函数" << endl;
+		}
+		person(int a)
+		{
+			age = a;
+			cout << "有参构造函数" << endl;
+		}
+		person(const person &p)
+		{
+			age = p.age;
+			cout << "拷贝构造函数" << endl;
+		}
+		~person()
+		{
+			cout << "析构函数!" << endl;
+		}
+	public:
+		int age;
+	};
+	int main(void)
+	{
+		person p1;				// 调用无参构造函数
+		person p2(10);			// 括号法
+		person p3 = person(10);	// 显示法
+		person p4 = person(p3);	// 显示法
+		person p5 = 10;			// 隐式转换法。person p5 = person(10);
+		person p6 = p5;			// 隐式转换法。person p6 = person(p5);
+	}
+	PS:如何显示法和隐式转换法（都是调用的拷贝构造函数）
+		person p3 = person(10) 等价于 person(10) + p3 = 临时对象。所以这是用一个对象初始化另一个对象，本质就是调用person(const person &p)。
+		person p5 = 10 实际执行的是 person p5 = person(10);
+		（只要右边能“变成一个 person 对象”，就可以用来初始化左边）
+	PS:显示法、隐式转换法的应用场景
+		函数传参（隐式法）
+			class person
+			{
+			public:
+				person(int a)
+				{
+					age = a;
+					cout << "构造函数" << endl;
+				}
+
+				int age;
+			};
+
+			void printPerson(person p)
+			{
+				cout << p.age << endl;
+			}
+
+			int main()
+			{
+				printPerson(10);   // 等价于 printPerson(person(10)); 即隐式转换的用途：让函数调用变得简单
+			}
+		返回值
+			person createPerson()
+			{
+				return 10;   // 等价于 return person(10);
+			}
+	
+	拷贝构造函数的调用时机
+		使用一个已经创建完毕的对象来初始化一个新对象
+		值传递的方式给函数参数传值
+		以值方式返回局部对象
+		class person
+		{
+		public：
+			person()
+			{
+				cout << "无参构造函数" << endl;
+			}
+			person(int a)
+			{
+				age = a;
+				cout << "有参构造函数" << endl;
+			}
+			person(const person &p)
+			{
+				age = p.age;
+				cout << "拷贝构造函数" << endl;
+			}
+			~person()
+			{
+				cout << "析构函数!" << endl;
+			}
+		public:
+			int age;
+		};
+		void func1(person p)
+		{
+			// do something here
+		}
+		person func2(void)
+		{
+			person p;
+			
+			return p;
+		}
+		int main(void)
+		{
+			person man(10);
+			person newman(man);		// 拷贝构造
+			person newman2 = man;	// 拷贝构造
+			
+			func1(newman);			// 拷贝构造
+			
+			person p = func2();		// 拷贝构造
+		}
+	
+	C++ 编译器至少给一个类添加 3 个函数：默认构造函数、默认析构函数以及默认拷贝构造函数。
+	如果用户定义了有参构造函数，编译器不再提供默认无参构造函数，但是会提供默认拷贝构造函数；如果用户定义了拷贝构造函数，编译器不会再提供其他构造函数。
+	
+	浅拷贝：简单的赋值拷贝操作。
+	深拷贝：在堆区重新申请空间，进行拷贝操作。
+	class person
+	{
+	public:
+		person()
+		{
+			cout << "无参构造函数" << endl;
+		}
+		person(int age, int height)
+		{
+			cout << "有参构造函数" << endl;
+			
+			m_age = age;
+			m_height = new int(height);
+		}
+		person(const person &p)
+		{
+			cout << "拷贝构造函数" << endl;
+			
+			m_age = p.m_age;
+			m_height = new int(*p.m_height);
+		}
+		~person()
+		{
+			cout << "析构函数" << endl;
+			
+			if(m_height != NULL)
+			{
+				delete m_height;
+			}
+		}
+	public:
+		int m_age;
+		int *m_height;
+	}
+	
+	初始化列表：构造函数():属性1(值1), 属性2(值2),···{}
+	class person
+	{
+	public:
+		//person(int a, int b, int c)
+		//{
+		//	m_a = a;
+		//	m_b = b;
+		//	m_c = c;
+		//}
+		person(int a, int b, int c):m_a(a), m_b(b), m_c(c) {}
+	private:
+		int m_a;
+		int m_b;
+		int m_c;
+	}
+	
+	C++中类的成员可以是另一个类的对象，我们称该对象为成员对象。
+	先调用成员对象的构造函数，再调用本类的构造函数。析构顺序与之相反。
+	
+	静态成员变量
+		所有对象共享同一份数据。
+		在编译阶段分配内存。
+		类内声明，类外初始化。
+	静态成员函数
+		所有对象共享同一个函数。
+		静态成员函数只能访问静态成员变量。
+
+C++对象模型和this指针
+	类内的成员变量和成员函数分开存储：函数、静态成员函数、静态成员变量不占对象空间，只有非静态成员变量占对象空间。
+	
+	非静态成员函数在内存中只有一份实例，多个对象共享该代码，C++ 通过在函数中隐式引入指向当前调用对象的 this 指针来区分具体是哪个对象在调用。
+	当形参和成员变量同名时，可用this指针来区分。
+	在类的非静态成员函数中返回对象本身，可使用return *this
+	class person
+	{
+	public:
+		person(int age)
+		{
+			this->age = age;
+		}
+		
+		person &personAddperson(person p)
+		{
+			this->age = age;
+			
+			return *this;
+		}
+	public:
+		int age;
+	}
+	
+	空指针也可以调用成员函数，但如果用到this指针，需要加以判断保证代码的健壮性。
+	class person
+	{
+	public:
+		void showClassName()
+		{
+			cout << "我是person类" << endl;
+		}
+		void showPerson()
+		{
+			if(this == NULL)
+			{
+				return;
+			}
+			
+			cout << mAge << endl;
+		}
+	}
+	int main(void)
+	{
+		person *p = NULL;
+		p->showClassName();
+		p->showPerson();
+		
+		return 0;
+	}
+	
+	成员函数后加const我们称这个函数为常函数。常函数内不可以修改成员属性，成员属性声明时加关键字mutable后，在常函数中依然可以修改。
+	声明对象前加const称该对象为常对象，常对象只能调用常函数。
+
+友元
+	全局函数做友元
+	class Building
+	{
+		friend void goodGay(Building * building);
+
+	public:
+		Building()
+		{
+			this->m_SittingRoom = "客厅";
+			this->m_BedRoom = "卧室";
+		}
+	public:
+		string m_SittingRoom;
+	private:
+		string m_BedRoom;
+	};
+	void goodGay(Building * building)
+	{
+		cout << "好基友正在访问： " << building->m_SittingRoom << endl;
+		cout << "好基友正在访问： " << building->m_BedRoom << endl;
+	}
+	
+	类做友元
+	class Building;
+	class goodGay
+	{
+	public:
+		goodGay();
+		void visit();
+	private:
+		Building *building;
+	};
+	class Building
+	{
+		friend class goodGay;
+	public:
+		Building();
+	public:
+		string m_SittingRoom;
+	private:
+		string m_BedRoom;
+	};
+	Building::Building()
+	{
+		this->m_SittingRoom = "客厅";
+		this->m_BedRoom = "卧室";
+	}
+	goodGay::goodGay()
+	{
+		building = new Building;	// 创建Building对象并调用构造函数，building指向该对象
+	}
+	void goodGay::visit()
+	{
+		cout << "好基友正在访问" << building->m_SittingRoom << endl;
+		cout << "好基友正在访问" << building->m_BedRoom << endl;
+	}
+	
+	成员函数做友元
+	class Building;
+	class goodGay
+	{
+	public:
+		goodGay();
+		void visit();
+		void visit2(); 
+	private:
+		Building *building;
+	};
+	class Building
+	{
+		friend void goodGay::visit();
+	public:
+		Building();
+	public:
+		string m_SittingRoom;
+	private:
+		string m_BedRoom;
+	};
+	Building::Building()
+	{
+		this->m_SittingRoom = "客厅";
+		this->m_BedRoom = "卧室";
+	}
+	goodGay::goodGay()
+	{
+		building = new Building;
+	}
+	void goodGay::visit()
+	{
+		cout << "好基友正在访问" << building->m_SittingRoom << endl;
+		cout << "好基友正在访问" << building->m_BedRoom << endl;
+	}
+	void goodGay::visit2()
+	{
+		cout << "好基友正在访问" << building->m_SittingRoom << endl;
+		//cout << "好基友正在访问" << building->m_BedRoom << endl;
+	}
+
+运算符重载
+	加号运算符重载
+	class person
+	{
+	public:
+		person(int a, int b)
+		{
+			this->m_a = a;
+			this->m_b = b;
+		}
+		person operator+(const person &p)	// 成员函数实现 + 运算符重载
+		{
+			person temp;
+			temp.m_a = this->m_a + p.m_a;
+			temp.m_b = this->m_b + p.m_b;
+			return temp;
+		}
+	public:
+		int m_a;
+		int m_b;
+	}
+	// 全局函数实现 + 运算符重载
+	// person operator+(const person &p1, const person &p2)
+	// {
+	// 		person temp(0, 0);
+	// 		temp.m_a = p1.m_a + p2.m_a;
+	// 		temp.m_b = p1.m_b + p2.m_b;
+	//		return temp;
+	// }
+	person operator+(const person &p2, int val)		// 运算符重载可以发生函数重载
+	{
+		person temp;
+		temp.m_a = p2.m_a + val;
+		temp.m_b = p2.m_b +val;
+		return temp;
+	}
+	int main(void)
+	{
+		person p1(10, 10);
+		person p2(20, 20);
+		
+		person p3 = p1 + p2;	// 相当于 p1.operator+(p2);
+		person p4 = p3 + 10;	// 相当于 operator+(p3, 10);
+	}
+	
+	左移运算符重载
+	class person
+	{
+		friend ostream &operator<<(ostream &out, person &p);
+	public:
+		person(int a, int b)
+		{
+			this->m_a = a;
+			this->m_b = b;
+		}
+	private:
+		{
+			int m_a;
+			int m_b;
+		}
+	};
+	ostream &operator<<(ostream &out, person &p)
+	{
+		out << "a" << p.m_a << "b" << p.m_b;
+		return out;
+	}
+	int main(void)
+	{
+		person(10, 10);
+		cout << p1 << "hello world" << endl;
+		
+		return 0;
+	}
+	
+	递增运算符重载
+	class MyInteger
+	{
+	public:
+		MyInteger()
+		{
+			m_Num = 0;
+		}
+
+		// 前置++
+		MyInteger& operator++()
+		{
+			m_Num++;
+			return *this;
+		}
+
+		// 后置++
+		MyInteger operator++(int)
+		{
+			MyInteger temp = *this;
+			m_Num++;
+			return temp;
+		}
+
+		int getNum()
+		{
+			return m_Num;
+		}
+
+	private:
+		int m_Num;
+	};
+
+
+	void test01()
+	{
+		MyInteger myInt;
+
+		++myInt;
+		++myInt;
+
+		cout << myInt.getNum() << endl;
+	}
+
+	void test02()
+	{
+		MyInteger myInt;
+
+		MyInteger temp = myInt++;
+
+		cout << temp.getNum() << endl;
+		cout << myInt.getNum() << endl;
+	}
+
+	int main()
+	{
+		test01();
+		test02();
+
+		system("pause");
+		return 0;
+	}
+	
+	赋值运算符重载
+	class person
+	{
+	public:
+		person(int age)
+		{
+			m_age = new int(age);
+		}
+		person &operator=(person &p)
+		{
+			if(m_age != NULL)
+			{
+				delete m_age;
+				m_age = NULL;
+			}
+			
+			m_age = new int(*p.m_age);
+			
+			return *this;
+		}
+		~person()
+		{
+			if(m_age != NULL)
+			{
+				delete m_age;
+				m_age = NULL;
+			}
+		}
+		
+		int *m_age;
+	};
+	
+	int main(void)
+	{
+		person p1(20);
+		person p2(30);
+		person p3(40);
+		
+		p1 = p2 = p3;
+		
+		return 0;
+	}
+	
+	关系运算符重载
+	class person
+	{
+	public:
+		person(string name, int age)
+		{
+			this->m_name = name;
+			this->m_age = age;
+		}
+		bool operator==(person &p)
+		{
+			if(this->m_name == p.m_name && this->m_age == p.m_age)
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		bool operator!=(person &p)
+		{
+			if(this->m_name == p.m_name && this->m_age == p.m_age)
+			{
+				return false;
+			}
+			else
+			{
+				return true;
+			}
+		}
+		string m_name;
+		int m_age;
+	}
+	int main(void)
+	{
+		person a("wang", 10);
+		person b("wang", 10);
+		
+		if(a == b)
+		{
+			cout << "equal“ << endl;
+		}
+	}
+	
+	函数调用运算符重载
+	class myprint
+	{
+	public:
+		void operator()(string text)
+		{
+			cout << text << endl;
+		}
+	}
+	class myadd
+	{
+	public:
+		int operator()(int a, int b)
+		{
+			return a + b;
+		}
+	}
+	int main(void)
+	{
+		myprint print;
+		print("hello world");
+		
+		myadd add;
+		cout << add(10, 10) << endl;
+		
+		return 0;
+	}
+
+继承
+	class 子类 : 继承方式 父类
+		公有继承：保持原有访问级别（public 仍为 public，protected 仍为 protected）。
+		保护继承：父类的 public 和 protected 成员都变为 protected，仅供子类内部使用。
+		私有继承：父类的 public 和 protected 成员都变为 private，只用于实现细节。
+		父类的 private 成员在任何继承方式下都无法被子类直接访问。
+	
+	子类继承父类后，当创建子类对象，也会调用父类的构造函数。先调用父类的构造函数，再调用子类的构造函数。析构顺序与构造相反。
+	
+	子类对象可以直接访问到子类中的同名成员，子类对象加作用域可以访问到父类同名成员。
+	class base
+	{
+	public:
+		base()
+		{
+			m_a =100;
+		}
+		void func()
+		{
+			cout << "父类 func() 调用" << endl;
+		}
+		void func(int a)
+		{
+			cout << "父类 func(int a) 调用" << endl;
+		}
+	public:
+		int m_a;
+	}
+	class son : public base
+	{
+	public:
+		son()
+		{
+			m_a = 200;
+		}
+		void func()
+		{
+			cout << "子类 func() 调用" << endl;
+		}
+	public:
+		int m_a;
+	};
+	int main(void)
+	{
+		son s;
+		
+		cout << "子类的 m_a :" << s.m_a << endl;
+		cout << "父类的 m_a :" << s.base::m_a << endl;
+		
+		s.func();
+		s.base::func();
+		s.base::func(10);
+		
+		return 0;
+	}
+
+多态
+	多态分为静态多态和动态多态。
+	静态多态主要通过函数重载和运算符重载实现，其函数调用在编译阶段确定（早绑定）；
+	动态多态通过继承和虚函数实现，在基类指针或引用调用虚函数时，具体调用哪个函数需要在运行时根据对象类型决定（晚绑定）。
+	
+	多态满足条件：有继承关系；子类重写父类中的虚函数。（重写：函数返回值类型、函数名、函数列表完全一致）
+	多态使用方式：通过基类指针或引用调用虚函数，使其在运行时根据实际对象类型执行对应子类实现。
+	class animal
+	{
+	public:
+		virtual void speak()
+		{
+			cout << "动物在说话" << endl;
+		}
+	};
+	class cat : public animal
+	{
+	public:
+		void speak()
+		{
+			cout << "猫在说话" << endl;
+		}
+	};
+	class dog : public animal
+	{
+	public:
+		void speak()
+		{
+			cout << "狗在说话" << endl;
+		}
+	};
+	void Speak(animal &animal)
+	{
+		animal.speak();
+	}
+	int main(void)
+	{
+		cat cat;
+		Speak(cat);
+		
+		dog dog;
+		Speak(dog);
+		
+		return 0;
+	}
+	
+	例子1:两个操作数进行运算的计算机类
+	class AbstractCalculator
+	{
+	public :
+
+		virtual int getResult()
+		{
+			return 0;
+		}
+
+		int m_Num1;
+		int m_Num2;
+	};
+	class AddCalculator :public AbstractCalculator
+	{
+	public:
+		int getResult()
+		{
+			return m_Num1 + m_Num2;
+		}
+	};
+	class SubCalculator :public AbstractCalculator
+	{
+	public:
+		int getResult()
+		{
+			return m_Num1 - m_Num2;
+		}
+	};
+	class MulCalculator :public AbstractCalculator
+	{
+	public:
+		int getResult()
+		{
+			return m_Num1 * m_Num2;
+		}
+	};
+	int main(void)
+	{
+		AbstractCalculator *abc = new AddCalculator;
+		abc->m_Num1 = 10;
+		abc->m_Num2 = 10;
+		cout << abc->m_Num1 << " + " << abc->m_Num2 << " = " << abc->getResult() << endl;
+		delete abc;
+
+		abc = new SubCalculator;
+		abc->m_Num1 = 10;
+		abc->m_Num2 = 10;
+		cout << abc->m_Num1 << " - " << abc->m_Num2 << " = " << abc->getResult() << endl;
+		delete abc;  
+
+		abc = new MulCalculator;
+		abc->m_Num1 = 10;
+		abc->m_Num2 = 10;
+		cout << abc->m_Num1 << " * " << abc->m_Num2 << " = " << abc->getResult() << endl;
+		delete abc;
+		
+		return 0;
+	}
+	
+	virtual 返回值类型 函数名(参数列表) = 0;
+	父类虚函数通常只是作为接口存在而本身实现意义不大，因此可以将其定义为纯虚函数，此时该类成为抽象类，具有不能实例化对象且子类必须实现所有纯虚函数否则仍为抽象类的特点。
+	class Base
+	{
+	public:
+		virtual void func() = 0;
+	};
+	class Son :public Base
+	{
+	public:
+		virtual void func() 
+		{
+			cout << "func调用" << endl;
+		};
+	};
+	int main(void)
+	{
+		Base * base = NULL;
+		base = new Son;
+		base->func();
+		delete base;
+		
+		return 0;
+	}
+	
+	例子2：制作饮品（煮水 -  冲泡 - 倒入杯中 - 加入辅料。利用多态技术实现本案例，提供抽象制作饮品基类，提供子类制作咖啡和茶叶）
+	class AbstractDrinking
+	{
+	public:
+		virtual void Boil() = 0;			// 烧水
+		virtual void Brew() = 0;			// 冲泡
+		virtual void PourInCup() = 0;		// 倒入杯中
+		virtual void PutSomething() = 0;	// 加入辅料
+		void MakeDrink()					// 规定流程
+		{
+			Boil();
+			Brew();
+			PourInCup();
+			PutSomething();
+		}
+	};
+	class Coffee : public AbstractDrinking
+	{
+	public:
+		virtual void Boil() 
+		{
+			cout << "煮农夫山泉!" << endl;
+		}
+		virtual void Brew() 
+		{
+			cout << "冲泡咖啡!" << endl;
+		}
+		virtual void PourInCup() 
+		{
+			cout << "将咖啡倒入杯中!" << endl;
+		}
+		virtual void PutSomething() 
+		{
+			cout << "加入牛奶!" << endl;
+		}
+	};
+	class Tea : public AbstractDrinking 
+	{
+	public:
+		virtual void Boil() 
+		{
+			cout << "煮自来水!" << endl;
+		}
+		virtual void Brew() 
+		{
+			cout << "冲泡茶叶!" << endl;
+		}
+		virtual void PourInCup() 
+		{
+			cout << "将茶水倒入杯中!" << endl;
+		}
+		virtual void PutSomething() 
+		{
+			cout << "加入枸杞!" << endl;
+		}
+	};
+	void DoWork(AbstractDrinking* drink) 
+	{
+		drink->MakeDrink();
+		delete drink;
+	}
+	int main(void)
+	{
+		DoWork(new Coffee);
+		cout << "--------------" << endl;
+		DoWork(new Tea);
+		
+		return 0;
+	}
+	
+	虚析构：virtual ~类名(){}
+	纯虚析构：virtual ~类名() = 0;
+			类名::~类名() {};		// 析构函数一定会被调用，因此必须提供实现（由父类提供）。必须类外实现，因为“=0”只是声明，不包含函数体
+		当用父类指针 delete 子类对象时，若父类析构函数不是虚函数，则不会调用子类析构，可能导致资源（如堆内存）无法释放。
+		将父类析构函数声明为虚析构或纯虚析构,保证通过父类指针删除对象时，能正确调用子类析构。
+		纯虚析构会使类成为抽象类，无法实例化。
+	class Animal
+	{
+	public:
+		Animal()
+		{
+			cout << "Animal 构造函数调用" << endl;
+		}
+		virtual void Speak() = 0;
+		virtual ~Animal() = 0;
+	};
+	Animal::~Animal()
+	{
+		cout << "Animal 纯虚析构函数调用" << endl;
+	}
+	class Cat : public Animal {
+	public:
+		Cat(string name)
+		{
+			cout << "Cat构造函数调用" << endl;
+			m_Name = new string(name);
+		}
+		virtual void Speak()
+		{
+			cout << *m_Name <<  "小猫在说话!" << endl;
+		}
+		~Cat()
+		{
+			cout << "Cat析构函数调用" << endl;
+			if (this->m_Name != NULL)
+			{
+				delete m_Name;
+				m_Name = NULL;
+			}
+		}
+	public:
+		string *m_Name;
+	};
+	int main(void)
+	{
+		Animal *animal = new Cat("Tom");
+		animal->Speak();
+		delete animal;
+		
+		return 0;
+	}

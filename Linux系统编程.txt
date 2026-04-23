@@ -78,3 +78,162 @@
 	
 	void exit(int status);
 		调用退出处理程序,刷新 stdio 流缓冲区,使用由 status 提供的值执行_exit()系统调用。
+	
+	int atexit(void (*func)(void));
+		Returns 0 on success, or nonzero on error
+		
+		函数 atexit()将 func 加到一个函数列表中，进程终止时会调用该函数列表的所有函数。（与注册顺序相反）
+	
+	int on_exit(void (*func)(int, void *), void *arg);
+		Returns 0 on success, nonzero on error
+		
+		调用顺序与注册顺序相反。使用 atexit()和 on_exit()注册的函数位于同一函数列表。
+	
+	pid_t wait(int *status);
+		Returns process ID of terminated child, or -1 on error
+	
+	pid_t waitpid(pid_t pid, int *status, int options);
+		Returns process ID of child, 0 or -1 on error
+		
+		options:
+			WUNTRACED:除了返回终止子进程的信息外，还返回因信号而停止的子进程信息。
+			WCONTINUED:返回那些因收到 SIGCONT 信号而恢复执行的已停止子进程的状态信息。
+			WNOHANG:如果参数 pid 所指定的子进程并未发生状态改变，则立即返回。在这种情况下，waitpid()返回 0。
+	
+	int execve(const char *pathname, char *const argv[], char *const envp[]);
+		Never returns on success;returns -1 on error
+		
+		pathname:准备载入当前进程空间的新程序的路径名。
+		argv:指定了传递给新进程的命令行参数。
+		envp:指定了新程序的环境列表。
+
+线程
+	int pthread_creat(pthread_t *thread, const pthread_attr_t *attr, void *(*start)(void *), void *arg);
+		Returns 0 on success, or a positive error number on error
+		
+		thread:指向 pthread_t 类型的缓冲区，在 pthread_create()返回前，会在此保存一个该线程的唯一标识。后续的 Pthreads 函数将使用该标识来引用此线程。
+		attr:指向 pthread_attr_t 对象的指针，该对象指定了新线程的各种属性。
+	
+	void pthread_exit(void *retval);
+		
+		调用 pthread_exit()相当于在线程的 start 函数中执行 return，不同之处在于，可在线程 start 函数所调用的任意函数中调用 pthread_exit() 。
+		
+		retval:指定了线程的返回值。
+	
+	int pthread_join(pthread_t thread, void **retval);
+		Returns 0 on success, or a positive error number on error
+		
+		retval:保存线程终止时返回值的拷贝。
+	
+	int pthread_detach(pthread_t thread);
+		Returns 0 on success, or a positive error number on error
+		
+		将指定线程标记为处于分离（detached）状态。
+	
+	pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALLIZER;
+	
+	int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr);
+		Returns 0 on success, or a positive error number on error
+		
+		mutex: 指定函数执行初始化操作的目标互斥量。
+		attr:指向 pthread_mutexattr_t 类型对象的指针，该对象在函数调用之前已经过了初始化处理，用于定义互斥量的属性。
+		
+		PS:互斥量类型
+			PTHREAD_MUTEX_NORMAL:该类型的互斥量不具有死锁检测（自检）功能。如线程试图对已由自己锁定的互斥量加锁，则发生死锁。互斥量处于未锁定状态，或者已由其他线程锁定，对其解锁会导致不确定的结果。
+			PTHREAD_MUTEX_ERRORCHECK:对此类互斥量的所有操作都会执行错误检查。所有上述 3 种情况都会导致相关 Pthreads 函数返回错误。这类互斥量运行起来比一般类型要慢，不过可将其作为调试工具，以发现程序在哪里违反了互斥量使用的基本原则。
+			PTHREAD_MUTEX_RECURSIVE:递归互斥量维护有一个锁计数器。当线程第 1 次取得互斥量时，会将锁计数器置 1。后续由同一线程执行的每次加锁操作会递增锁计数器的数值，而解锁操作则递减计数器计数。只有当锁计数器值降至 0 时，才会释放（release，亦即可为其他线程所用）该互斥量。解锁时如目标互斥量处于未锁定状态，或是已由其他线程锁定，操作都会失败。
+			
+			pthread_mutex_t mtx;
+			pthread_mutexattr_t mtxAttr;
+			pthread_mutexattr_init(&mtxAttr);
+			pthread_mutexattr_settype(&mtxAttr, PTHREAD_MUTEX_ERRORCHECK);
+			pthread_mutex_init(mtx, &mtxAttr);
+	
+	int pthread_mutex_destroy(pthread_mutex_t *mutex);
+		Returns 0 on success, or a positive error number on error
+	
+	int pthread_mutex_lock(pthread_mutex_t *mutex);	-> pthread_mutex_trylock(); pthread_mutex_timedlock();
+	int pthread_mutex_unlock(pthread_mutex_t *mutex);
+		Both return 0 on success, or a positive error number on error
+	
+	pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+	
+	int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);
+		Returns 0 on success, or a positive error number on error
+	
+	int pthread_cond_destroy(pthread_cond_t *cond);
+		Returns 0 on success, or a positive error number on error
+	
+	int pthread_cond_signal(pthread_cond_t *cond);
+	int pthread_cond_broadcast(pthread_cond_t *cond);
+	int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex); -> pthread_cond_timedwait();
+		All return 0 on success, or a positive error number on error
+	
+	int pthread_cancle(pthread_t thread);
+		Returns 0 on success, or a positive error number on error
+	
+	int pthread_setcancelstate(int state, int *oldstate);
+		Returns 0 on success, or a positive error number on error
+		
+		PTHREAD_CANCEL_DISABLE:线程不可取消。如果此类线程收到取消请求，则会将请求挂起，直至将线程的取消状态置为启用。
+		PTHREAD_CANCEL_ENABLE:线程可以取消。
+		
+	int pthread_setcanceltype(int type, int *oldtype);
+		Returns 0 on success, or a positive error number on error
+		
+		PTHREAD_CANCEL_ASYNCHRONOUS:可能会在任何时点（也许是立即取消，但不一定）取消线程。
+		PTHREAD_CANCEL_DEFERED:取消请求保持挂起状态，直至到达取消点。
+
+文件I/O
+	int open(const char *pathname, int flags, .../* mode_t mode */);
+		Returns file descriptor on success, or -1 on error
+		
+		pathname:文件路径。
+		flags:
+			O_RDONLY 	以只读方式打开
+			O_WRONLY 	以只写方式打开
+			O_RDWR 		以读写方式打开
+			O_CLOEXEC 	设置 close-on-exec 标志
+			O_CREAT 	若文件不存在则创建之
+			O_DIRECT 	无缓冲的输入/输出
+			O_DIRECTORY 如果 pathname 不是目录，则失败
+			O_EXCL 		结合 O_CREAT 参数使用，专门用于创建文件
+			O_LARGEFILE 在 32 位系统中使用此标志打开大文件
+			O_NOATIME 	调用 read() 时，不修改文件最近访问时间
+			O_NOCTTY 	不要让 pathname（所指向的终端设备）成为控制终端
+			O_NOFOLLOW 	对符号链接不予解引用
+			O_TRUNC 	截断已有文件，使其长度为零
+			O_APPEND 	总在文件尾部追加数据
+			O_ASYNC 	当 I/O 操作可并行时，产生信号（signal）通知进程
+			O_DSYNC 	提供同步的 I/O 数据完整性
+			O_NONBLOCK 	以非阻塞方式打开
+			O_SYNC 		以同步方式写入文件
+		mode:新建文件的权限位。包含属主权限、属组权限、其他用户权限和特殊权限位。
+	
+	ssize_t read(int fd, void *buffer, ssize_t count);
+		Returns number of bytes read, 0 on EOF, or -1 on error
+	
+	int close(fd);
+		Returns 0 on success, or -1 on error
+	
+	off_t lseek(int fd, off_t offset, int whence);
+		Returns new file offset if successfully, or -1 on error
+		
+		whence:
+			SEEK_SET:将文件偏移量设置为从文件头部起始点开始的 offset 个字节。
+			SEEK_CUR:相对于当前文件偏移量，将文件偏移量调整 offset 个字节。
+			SEEK_END:将文件偏移量设置为起始于文件尾部的 offset 个字节。也就是说，offset 参数应该从文件最后一个字节之后的下一个字节算起。
+
+管道和FIFO
+	int pipe(int filedes[2]);
+		Returns 0 on success, or -1 on error
+	
+	int mkfifo(const char *pathname, mode_t mode);
+		Returns 0 on success, or -1 on error
+
+内存映射
+	
+
+消息队列
+	mqd_t mq_open(const char *name, int oflag, .../* mode_t mode, struct mq_attr *attr */);
+		Returns a message queue descriptor on success, or (mqd_t)-1 on error
